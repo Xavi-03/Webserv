@@ -12,14 +12,7 @@ location_t	*Config::getLocation(void) {return location;}
 
 //  SETTERS  //
 void	Config::setServerName(std::string _server_name) {
-	int start = _server_name.find(" ");
-	int end = _server_name.find(";");
-	if (start + 2 >= _server_name.length()) {
-		std::cout << "serverName Error" << std::endl;
-		return ;
-	}
-	server_name = _server_name.substr(start + 1, end - start - 1);
-	std::cout << ":" << server_name << ":" << std::endl;
+	server_name = _server_name;
 }
 
 void	Config::setPortListen(std::string _port_listen) {
@@ -51,25 +44,62 @@ void	Config::setLocation(location_t *_location) {
 }
 
 //  METHODS  //
+std::string	Config::takeParams(std::string option, int *error) {
+	int start = option.find(" ");
+	int end = option.find(";");
+	if (end == -1 || start == -1) {
+		std::cout << GREEN << "Error: found at \"" << option << "\"" << RESET << std::endl;
+		*error = 1;
+		return "Error";
+	}
+	//std::cout << start << std::endl;
+	//std::cout << end << std::endl;
+	return option.substr(start + 1, end - start - 1);
+}
+
+
 int	Config::searchConfig(std::string option) {
-	std::cout << option << std::endl;
+	int error = 0;
+	//std::cout << option << std::endl;
 	if (option.compare(0, 12, "server_name ") == 0)
-		setServerName(option);
+		setServerName(takeParams(option, &error));
 	else if (option.compare(0, 7, "listen ") == 0)
-		setPortListen(option);
+		setPortListen(takeParams(option, &error));
 	else if (option.compare(0, 5, "host ") == 0)
-		setHost(option);
+		setHost(takeParams(option, &error));
 	else if (option.compare(0, 5, "root ") == 0)
-		setRoot(option);
+		setRoot(takeParams(option, &error));
 	else if (option.compare(0, 6, "index ") == 0)
-		setIndex(option);
+		setIndex(takeParams(option, &error));
 	else if (option.compare(0, 11, "error_page ") == 0)
-		setErrorPage(option);
-	else if (option.compare(0, 5, "client_max_body_size ") == 0)
-		setClientMaxBodySize(option);
-	else
-		return (1);
+		setErrorPage(takeParams(option, &error));
+	else if (option.compare(0, 21, "client_max_body_size ") == 0)
+		setClientMaxBodySize(takeParams(option, &error));
+	else if (option.compare(0, 9, "location ") == 0)
+		;
+	else {
+		std::cout << GREEN << "Error not found: " << option << RESET << std::endl;
+		return 1;
+	}
+	if (error)
+		return 1;
 	return 0;
+}
+
+void	Config::printConfig(void) {
+	std::cout << "server name: " << server_name << std::endl;
+	std::cout << "port listen: " << port_listen << std::endl;
+	std::cout << "host: " << host << std::endl;
+	std::cout << "root: " << root << std::endl;
+	std::cout << "index: " << error_page << std::endl;
+	std::cout << "error page: " << error_page << std::endl;
+	std::cout << "client max body size: " << client_max_body_size << std::endl;
+}
+
+int	Config::checkRoot(void) {
+	if (access(root.data(), F_OK))
+		return (1);
+	return (0);
 }
 
 //  EXCEPTIONS  //
