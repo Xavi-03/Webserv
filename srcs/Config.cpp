@@ -2,21 +2,22 @@
 
 //  GETTERS  //
 std::string Config::getServerName(void) {return server_name;}
-std::string Config::getPortListen(void) {return port_listen;}
+int			Config::getPort(void) {return port;}
 std::string Config::getHost(void) {return host;}
 std::string Config::getRoot(void) {return root;};
 std::string Config::getIndex(void) {return index;}
 std::string Config::getErrorPage(void) {return error_page;}
-std::string Config::getClientMaxBodySize(void) {return client_max_body_size;}
-location_t	*Config::getLocation(void) {return location;}
+int			Config::getClientMaxBodySize(void) {return client_max_body_size;}
+location_t	*Config::getLocation(void) {return iterLocation;}
 
 //  SETTERS  //
 void	Config::setServerName(std::string _server_name) {
 	server_name = _server_name;
 }
 
-void	Config::setPortListen(std::string _port_listen) {
-	port_listen = _port_listen;
+void	Config::setPort(std::string _port) {
+	std::istringstream value(_port);
+	value >> port;
 }
 
 void	Config::setHost(std::string _host) {
@@ -36,11 +37,20 @@ void	Config::setErrorPage(std::string _error_page) {
 }
 
 void	Config::setClientMaxBodySize(std::string _client_max_body_size) {
-	client_max_body_size = _client_max_body_size;
+	std::istringstream value(_client_max_body_size);
+	value >> client_max_body_size;
+}
+
+void	Config::setCgiPath(std::string _cgi_path) {
+	cgi_path = _cgi_path;
+}
+
+void	Config::setCgiExt(std::string _cgi_ext) {
+	cgi_ext = _cgi_ext;
 }
 
 void	Config::setLocation(location_t *_location) {
-	location = _location;
+	iterLocation = _location;
 }
 
 //  METHODS  //
@@ -64,7 +74,7 @@ int	Config::searchConfig(std::string option) {
 	if (option.compare(0, 12, "server_name ") == 0)
 		setServerName(takeParams(option, &error));
 	else if (option.compare(0, 7, "listen ") == 0)
-		setPortListen(takeParams(option, &error));
+		setPort(takeParams(option, &error));
 	else if (option.compare(0, 5, "host ") == 0)
 		setHost(takeParams(option, &error));
 	else if (option.compare(0, 5, "root ") == 0)
@@ -75,8 +85,12 @@ int	Config::searchConfig(std::string option) {
 		setErrorPage(takeParams(option, &error));
 	else if (option.compare(0, 21, "client_max_body_size ") == 0)
 		setClientMaxBodySize(takeParams(option, &error));
+	else if (option.compare(0, 0, "cgi_path"))
+		setCgiPath(takeParams(option, &error));
+	else if (option.compare(0, 0, "cgi_ext"))
+		setCgiExt(takeParams(option, &error));
 	else if (option.compare(0, 9, "location ") == 0)
-		;
+		addLocation();
 	else {
 		std::cout << GREEN << "Error not found: " << option << RESET << std::endl;
 		return 1;
@@ -88,10 +102,10 @@ int	Config::searchConfig(std::string option) {
 
 void	Config::printConfig(void) {
 	std::cout << "server name: " << server_name << std::endl;
-	std::cout << "port listen: " << port_listen << std::endl;
+	std::cout << "port listen: " << port << std::endl;
 	std::cout << "host: " << host << std::endl;
 	std::cout << "root: " << root << std::endl;
-	std::cout << "index: " << error_page << std::endl;
+	std::cout << "index: " << index << std::endl;
 	std::cout << "error page: " << error_page << std::endl;
 	std::cout << "client max body size: " << client_max_body_size << std::endl;
 }
@@ -107,3 +121,17 @@ int	Config::checkRoot(void) {
 	const char *error =  "not found";
 	return error;
 }*/
+//  LINKED LIST LOCATIONS  //
+location_t *Config::addLocation(void) {
+	location_t *tmpLocation = new location_t;
+	if (!firstLocation) {
+		firstLocation = tmpLocation;
+		iterLocation = tmpLocation;
+		lastLocation = tmpLocation;
+	}
+	lastLocation->next = tmpLocation;
+	tmpLocation->next = NULL;
+	// set default values
+	lastLocation = tmpLocation;
+	return tmpLocation;
+}

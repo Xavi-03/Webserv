@@ -60,7 +60,9 @@ int	takeConfig(char *configFile) {
 	//std::cout << std::endl;
 	//std::cout << std::endl;
 	//std::cout << std::endl;
-	//config[j]->printConfig();
+	config[0]->printConfig();
+	std::cout << std::endl;
+	config[1]->printConfig();
 	if (config[j]->checkRoot())
 		;//std::cout << GREEN << "Error: Root \"" << config[j]->getRoot() << "\" not found" << RESET << std::endl;
 	deleteConfig(config);
